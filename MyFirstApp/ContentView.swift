@@ -309,12 +309,14 @@ struct TripListView: View {
             VStack(spacing: 12) {
                 Text("Ready for Adventure?")
                     .font(.title.bold())
+                    .multilineTextAlignment(.center)
                 Text("Create your first trip to start tracking expenses")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
     
     private var filteredTrips: [Trip] {
@@ -708,10 +710,17 @@ struct TripDetailView: View {
             
             if trip.expenses.isEmpty {
                 SectionCard {
-                    Text("No expenses yet. Add one above to get started!")
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
+                    VStack {
+                        Text("No Expenses Yet")
+                            .font(.headline)
+                            .multilineTextAlignment(.center)
+                        Text("add your first expense")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 20)
                 }
             } else {
                 ForEach(groupedExpenses.keys.sorted(by: >), id: \.self) { day in
