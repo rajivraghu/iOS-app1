@@ -60,9 +60,11 @@ final class FirebaseService {
         let ref = db.collection("trips").document(trip.id.uuidString)
         ref.setData(tripDict(trip), merge: true) { [weak self] error in
             if let error { completion(error); return }
-            self?.syncMembers(trip)
-            self?.uploadTripSnapshotToStorage(trip)
-            completion(nil)
+            self?.syncMembers(trip) { memberError in
+                if let memberError { completion(memberError); return }
+                self?.uploadTripSnapshotToStorage(trip)
+                completion(nil)
+            }
         }
     }
 
@@ -181,10 +183,12 @@ final class FirebaseService {
         return Member(id: id, name: name)
     }
 
-    private func syncMembers(_ trip: Trip) {
+    private func syncMembers(_ trip: Trip, completion: ((Error?) -> Void)? = nil) {
         let membersRef = db.collection("trips").document(trip.id.uuidString).collection("members")
         // Fetch existing and delete missing
-        membersRef.getDocuments { [weak self] snap, _ in
+        membersRef.getDocuments { [weak self] snap, err in
+            if let err { completion?(err); return }
+
             let existingIDs = Set((snap?.documents ?? []).map { $0.documentID })
             let currentIDs = Set(trip.members.map { $0.id.uuidString })
 
@@ -200,7 +204,9 @@ final class FirebaseService {
                 batch?.setData(self?.memberDict(m) ?? [:], forDocument: membersRef.document(m.id.uuidString), merge: true)
             }
 
-            batch?.commit(completion: { _ in })
+            batch?.commit { commitError in
+                completion?(commitError)
+            }
         }
     }
 
