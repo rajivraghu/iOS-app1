@@ -223,6 +223,7 @@ struct TripListView: View {
                         emptyStateView
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
                     } else {
                         ForEach(filteredTrips) { trip in
                             NavigationLink(value: trip) {
@@ -315,6 +316,7 @@ struct TripListView: View {
                     .multilineTextAlignment(.center)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
     
     private var filteredTrips: [Trip] {
@@ -708,10 +710,16 @@ struct TripDetailView: View {
             
             if trip.expenses.isEmpty {
                 SectionCard {
-                    Text("No expenses yet. Add one above to get started!")
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
+                    VStack(spacing: 8) {
+                        Text("No Expenses Yet")
+                            .font(.headline)
+                        Text("Add your first expense above to get started!")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 20)
                 }
             } else {
                 ForEach(groupedExpenses.keys.sorted(by: >), id: \.self) { day in
