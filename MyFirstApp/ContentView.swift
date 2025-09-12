@@ -214,84 +214,82 @@ struct TripListView: View {
     @State private var tripToDelete: Trip? = nil
     
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.appBackground.ignoresSafeArea()
-                
-                List {
-                    if store.trips.isEmpty {
-                        emptyStateView
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                    } else {
-                        ForEach(filteredTrips) { trip in
-                            NavigationLink(value: trip) {
-                                TripCard(trip: trip)
+        ZStack {
+            Color.appBackground.ignoresSafeArea()
+
+            List {
+                if store.trips.isEmpty {
+                    emptyStateView
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                } else {
+                    ForEach(filteredTrips) { trip in
+                        NavigationLink(value: trip) {
+                            TripCard(trip: trip)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                tripToDelete = trip
+                            } label: {
+                                Label("Delete", systemImage: "trash")
                             }
-                            .buttonStyle(PlainButtonStyle())
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                Button(role: .destructive) {
-                                    tripToDelete = trip
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                            .contextMenu {
-                                Button("Edit", systemImage: "pencil") { editingTrip = trip }
-                                Button("Delete", systemImage: "trash", role: .destructive) {
-                                    tripToDelete = trip
-                                }
+                        }
+                        .contextMenu {
+                            Button("Edit", systemImage: "pencil") { editingTrip = trip }
+                            Button("Delete", systemImage: "trash", role: .destructive) {
+                                tripToDelete = trip
                             }
                         }
                     }
                 }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
             }
-            .preferredColorScheme(.light)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("TripExpense")
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(Color.primaryButtonGradient)
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        tripToCreate = Trip(name: "")
-                        showNewTrip = true
-                    } label: {
-                        HStack(spacing: 6) {
-                            Image(systemName: "plus")
-                            Text("New")
-                        }
-                        .font(.system(size: 16, weight: .semibold))
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(Color.primaryButtonGradient)
-                        .foregroundColor(.white)
-                        .clipShape(Capsule())
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+        }
+        .preferredColorScheme(.light)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("TripExpense")
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(Color.primaryButtonGradient)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    tripToCreate = Trip(name: "")
+                    showNewTrip = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "plus")
+                        Text("New")
                     }
+                    .font(.system(size: 16, weight: .semibold))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.primaryButtonGradient)
+                    .foregroundColor(.white)
+                    .clipShape(Capsule())
                 }
             }
-            .navigationDestination(for: Trip.self) { trip in
-                TripDetailView(trip: boundTrip(trip))
-            }
-            .confirmationDialog(
-                "Delete this trip?",
-                isPresented: Binding(get: { tripToDelete != nil }, set: { if !$0 { tripToDelete = nil } }),
-                titleVisibility: .visible
-            ) {
-                Button("Delete", role: .destructive) {
-                    if let t = tripToDelete, let idx = store.trips.firstIndex(of: t) {
-                        store.deleteTrips(at: IndexSet(integer: idx))
-                    }
-                    tripToDelete = nil
+        }
+        .navigationDestination(for: Trip.self) { trip in
+            TripDetailView(trip: boundTrip(trip))
+        }
+        .confirmationDialog(
+            "Delete this trip?",
+            isPresented: Binding(get: { tripToDelete != nil }, set: { if !$0 { tripToDelete = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let t = tripToDelete, let idx = store.trips.firstIndex(of: t) {
+                    store.deleteTrips(at: IndexSet(integer: idx))
                 }
-                Button("Cancel", role: .cancel) { tripToDelete = nil }
+                tripToDelete = nil
             }
+            Button("Cancel", role: .cancel) { tripToDelete = nil }
         }
         .searchable(text: $search, prompt: "Search trips...")
         .sheet(isPresented: $showNewTrip) { TripEditor(trip: $tripToCreate, isNew: true) }

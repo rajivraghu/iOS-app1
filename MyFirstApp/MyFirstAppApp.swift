@@ -13,9 +13,10 @@ struct MyFirstAppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // Set TripListView as the starting view and pass the store into the environment
-            TripListView()
-                .environmentObject(store)
+            NavigationStack {
+                WelcomeView()
+            }
+            .environmentObject(store)
         }
     }
 }
