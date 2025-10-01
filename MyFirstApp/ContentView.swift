@@ -81,6 +81,7 @@ enum Currency: String, CaseIterable, Codable, Identifiable {
 // MARK: - Store (local JSON persistence)
 final class TripStore: ObservableObject {
     @Published var trips: [Trip] = []
+    @Published var isInitialLoad = true
     
     // Uncomment this line to enable Firebase
     private let firebase = FirebaseService()
@@ -101,7 +102,7 @@ final class TripStore: ObservableObject {
         firebase.fetchTrips { [weak self] fetchedTrips in
             DispatchQueue.main.async {
                 self?.trips = fetchedTrips
-                // Remove the seedSampleData() call to stop creating dummy data
+                self?.isInitialLoad = false
             }
         }
     }
